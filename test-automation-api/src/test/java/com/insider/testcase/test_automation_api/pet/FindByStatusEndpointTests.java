@@ -32,7 +32,7 @@ public class FindByStatusEndpointTests {
 
     @Test
     public void findByStatus_successfullyReturn() throws Throwable {
-        ResponseEntity<?> findPetsByStatusResponse = petClient.findByStatus(List.of("available"));
+        ResponseEntity<?> findPetsByStatusResponse = petClient.findByStatus(List.of("asd"));
         List<Pet> foundPets = objectMapper.convertValue(findPetsByStatusResponse.getBody(), new TypeReference<>() {
         });
 
