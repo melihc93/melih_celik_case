@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insider.testcase.test_automation_api.TestAutomationApiCaseSolutionApplication;
 import com.insider.testcase.test_automation_api.pet.client.PetClient;
 import com.insider.testcase.test_automation_api.pet.client.response.Pet;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,9 +31,10 @@ public class FindByStatusEndpointTests {
     @Value("${test-resilience.rest.pet.find-by-status.attempt}")
     private int findByStatusEndpointRetryAttempt;
 
-    @Test
-    public void findByStatus_successfullyReturn() throws Throwable {
-        ResponseEntity<?> findPetsByStatusResponse = petClient.findByStatus(List.of("available"));
+    @ParameterizedTest(name = "[{index}] status={0}")
+    @ValueSource(strings = {"available", "sold", "pending"})
+    public void findByStatus_successfullyReturn(String status) throws Throwable {
+        ResponseEntity<?> findPetsByStatusResponse = petClient.findByStatus(List.of(status));
         List<Pet> foundPets = objectMapper.convertValue(findPetsByStatusResponse.getBody(), new TypeReference<>() {
         });
 
@@ -45,6 +47,29 @@ public class FindByStatusEndpointTests {
                 ),
                 () -> assertWithRetry(
                         () -> assertThat(foundPets.size()).isNotZero(),
+                        findByStatusEndpointRetryAttempt,
+                        java.time.Duration.ofMillis(findByStatusEndpointDelay),
+                        AssertionError.class
+                )
+        );
+    }
+
+    @ParameterizedTest(name = "[{index}] status={0}")
+    @ValueSource(strings = {"test", "0", "!!!"})
+    public void whenNotAvailableStatusSearched_findByAllNotReturnAnything(String status) throws Throwable {
+        ResponseEntity<?> findPetsByStatusResponse = petClient.findByStatus(List.of(status));
+        List<Pet> foundPets = objectMapper.convertValue(findPetsByStatusResponse.getBody(), new TypeReference<>() {
+        });
+
+        assertAll(
+                () -> assertWithRetry(
+                        () ->  assertThat(findPetsByStatusResponse.getStatusCode().is2xxSuccessful()).isTrue(),
+                        findByStatusEndpointRetryAttempt,
+                        java.time.Duration.ofMillis(findByStatusEndpointDelay),
+                        AssertionError.class
+                ),
+                () -> assertWithRetry(
+                        () -> assertThat(foundPets.size()).isZero(),
                         findByStatusEndpointRetryAttempt,
                         java.time.Duration.ofMillis(findByStatusEndpointDelay),
                         AssertionError.class
