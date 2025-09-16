@@ -1,0 +1,3 @@
+client:
+  pet:
+    baseUrl: https://petstore.swagger.io

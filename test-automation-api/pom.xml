@@ -118,7 +118,6 @@
                 <configuration>
                     <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
                     <reportDirectory>${project.build.directory}/allure-report</reportDirectory>
-                    <clean>true</clean>
                 </configuration>
                 <executions>
                     <execution>

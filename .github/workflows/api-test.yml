@@ -1,0 +1,62 @@
+name: tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-allure:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: test-automation-api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin JDK 24
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '24'
+          cache: maven
+
+      - name: Set Spring profile
+        run: echo "SPRING_PROFILES_ACTIVE=pipeline" >> $GITHUB_ENV
+
+      - name: Build & test (creates Allure report during verify)
+        run: |
+          mvn -U -B -ntp clean verify
+
+      - name: Upload allure-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: test-automation-api/target/allure-results/**
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload allure-report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: test-automation-api/target/allure-report/**
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload surefire-reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: test-automation-api/target/surefire-reports/**
+          if-no-files-found: ignore

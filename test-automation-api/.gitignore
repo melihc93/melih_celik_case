@@ -32,4 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
-QA*
+### Allure Reports ###
+.allure
+
+### Test Credential Configs ###
+src/main/resources/application-local.yml
