@@ -11,10 +11,12 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class PetClientProperties {
     private String baseUrl;
+    private String apiKey;
     private String findByStatus;
     private String addNewPet;
     private String findPetById;
     private String updateExistingPet;
     private String uploadAnImage;
     private String updatePetInStoreWithFormData;
+    private String deleteAPet;
 }

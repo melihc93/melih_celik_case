@@ -3,6 +3,7 @@ package com.insider.testcase.test_automation_api.pet.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insider.testcase.test_automation_api.config.rest.RestClient;
 import com.insider.testcase.test_automation_api.pet.client.exception.EmptyResponseException;
+import com.insider.testcase.test_automation_api.pet.client.response.DeleteByIdResponse;
 import com.insider.testcase.test_automation_api.pet.client.response.UploadImageResponse;
 import com.insider.testcase.test_automation_api.pet.config.PetClientProperties;
 import com.insider.testcase.test_automation_api.pet.client.request.QueryParamNames;
@@ -42,6 +43,9 @@ public class PetClient {
             new ParameterizedTypeReference<>() {
             };
     private final ParameterizedTypeReference<UploadImageResponse> UPLOAD_IMAGE_RESPONSE_TYPE =
+            new ParameterizedTypeReference<>() {
+            };
+    private final ParameterizedTypeReference<DeleteByIdResponse> DELETE_BY_ID_RESPONSE_TYPE =
             new ParameterizedTypeReference<>() {
             };
 
@@ -181,6 +185,25 @@ public class PetClient {
                 uri,
                 form,
                 UPLOAD_IMAGE_RESPONSE_TYPE,
+                headers
+        );
+    }
+
+    public ResponseEntity<?> deletePetById(String petId) {
+        URI uri = UriComponentsBuilder
+                .fromUriString(petClientProperties.getBaseUrl())
+                .path(String.format(petClientProperties.getDeleteAPet(), petId))
+                .build()
+                .toUri();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        headers.add("api_key", petClientProperties.getApiKey());
+
+        return restClient.exchange(
+                HttpMethod.DELETE,
+                uri,
+                DELETE_BY_ID_RESPONSE_TYPE,
                 headers
         );
     }

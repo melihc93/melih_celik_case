@@ -25,7 +25,7 @@ public class PetClientLoggingAspect {
 
     private static final int PREVIEW_LIMIT = 2000;
     private static final Set<String> SENSITIVE_HEADERS = Set.of(
-            HttpHeaders.AUTHORIZATION, "X-API-Key", "Api-Key", "X-Auth-Token"
+            HttpHeaders.AUTHORIZATION, "X-API-Key", "Api-Key", "X-Auth-Token", "api_key"
     );
 
     @Around("execution(public * com.insider.testcase.test_automation_api.pet.client.PetClient.*(..))")

@@ -18,6 +18,8 @@ concurrency:
 jobs:
   test-and-report:
     runs-on: ubuntu-latest
+    env:
+      PET_STORE_API_KEY: ${{ secrets.PET_STORE_API_KEY }}
     defaults:
       run:
         working-directory: test-automation-api

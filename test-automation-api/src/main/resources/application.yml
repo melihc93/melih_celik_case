@@ -15,6 +15,7 @@ client:
     updateExistingPet: /v2/pet
     uploadAnImage: /v2/pet/%s/uploadImage
     updatePetInStoreWithFormData: /v2/pet/%s
+    deleteAPet: /v2/pet/%s
 
 test-resilience:
   rest:

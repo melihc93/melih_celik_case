@@ -9,6 +9,8 @@
         </rollingPolicy>
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+            <replace regex="(?i)(authorization|proxy-authorization|api[_-]?key)\s*[:=]\s*[^,\]\s}]+"
+                     replacement="$1: [REDACTED]"/>
         </encoder>
     </appender>
 
