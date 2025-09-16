@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: Test Automation API Case Solution
+
+webclient:
+  connect-timeout: 5000  # milliseconds
+  read-timeout: 10000    # milliseconds
+  max-memory-size: 512  # megabyte
+
+client:
+  pet:
+    findByStatus: /v2/pet/findByStatus
+
+test-resilience:
+  rest:
+    pet:
+      find-by-status:
+        delay: 100 # milliseconds
+        attempt: 5
