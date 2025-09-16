@@ -66,6 +66,11 @@ jobs:
           path: test-automation-api/target/surefire-reports/**
           if-no-files-found: ignore
 
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: test-automation-api/target/allure-report
+
   deploy-pages:
     needs: test-and-report
     runs-on: ubuntu-latest
