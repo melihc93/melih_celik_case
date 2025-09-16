@@ -6,12 +6,17 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test-and-allure:
+  test-and-report:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,3 +65,19 @@ jobs:
           name: surefire-reports
           path: test-automation-api/target/surefire-reports/**
           if-no-files-found: ignore
+
+  deploy-pages:
+    needs: test-and-report
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add link to job summary
+        run: |
+          echo "### ✅ Allure report" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
