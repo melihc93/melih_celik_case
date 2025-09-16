@@ -34,3 +34,6 @@ build/
 
 ### Test Case ###
 *.pdf
+
+### Test Logs ###
+*/.logs/test-logs*.log
