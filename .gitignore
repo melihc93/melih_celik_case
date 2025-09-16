@@ -37,3 +37,4 @@ build/
 
 ### Test Logs ###
 */.logs/test-logs*.log
+*/.logs/*app*.log
