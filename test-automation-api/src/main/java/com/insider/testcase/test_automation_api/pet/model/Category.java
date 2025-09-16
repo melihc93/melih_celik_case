@@ -1,14 +1,14 @@
-package com.insider.testcase.test_automation_api.pet.client.model;
+package com.insider.testcase.test_automation_api.pet.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Builder
 public class Category {
     private Long id;
     private String name;

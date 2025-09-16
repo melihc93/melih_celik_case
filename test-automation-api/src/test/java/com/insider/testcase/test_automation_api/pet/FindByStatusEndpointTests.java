@@ -55,7 +55,7 @@ public class FindByStatusEndpointTests {
     }
 
     @ParameterizedTest(name = "[{index}] status={0}")
-    @ValueSource(strings = {"test", "0", "!!!"})
+    @ValueSource(strings = {"test", "0223", "!!!"})
     public void whenNotAvailableStatusSearched_findByAllNotReturnAnything(String status) throws Throwable {
         ResponseEntity<?> findPetsByStatusResponse = petClient.findByStatus(List.of(status));
         List<Pet> foundPets = objectMapper.convertValue(findPetsByStatusResponse.getBody(), new TypeReference<>() {

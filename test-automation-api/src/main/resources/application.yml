@@ -10,10 +10,21 @@ webclient:
 client:
   pet:
     findByStatus: /v2/pet/findByStatus
+    addNewPet: /v2/pet
+    findPetById: /v2/pet/%s
+    updateExistingPet: /v2/pet
+    uploadAnImage: /v2/pet/%s/uploadImage
+    updatePetInStoreWithFormData: /v2/pet/%s
 
 test-resilience:
   rest:
     pet:
       find-by-status:
-        delay: 100 # milliseconds
-        attempt: 5
+        delay: 500 # milliseconds
+        attempt: 10
+
+logging:
+  file:
+    name: .logs/test-logs.log
+  level:
+    com.insider.testcase.test_automation_api.pet.client.logging.PetClientLoggingAspect: DEBUG

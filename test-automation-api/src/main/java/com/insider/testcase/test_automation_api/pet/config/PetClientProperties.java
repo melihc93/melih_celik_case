@@ -1,4 +1,4 @@
-package com.insider.testcase.test_automation_api.pet.client.config;
+package com.insider.testcase.test_automation_api.pet.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,4 +12,9 @@ import org.springframework.context.annotation.Configuration;
 public class PetClientProperties {
     private String baseUrl;
     private String findByStatus;
+    private String addNewPet;
+    private String findPetById;
+    private String updateExistingPet;
+    private String uploadAnImage;
+    private String updatePetInStoreWithFormData;
 }

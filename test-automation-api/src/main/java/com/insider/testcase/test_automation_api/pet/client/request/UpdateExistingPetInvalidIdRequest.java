@@ -1,18 +1,18 @@
-package com.insider.testcase.test_automation_api.pet.client.response;
+package com.insider.testcase.test_automation_api.pet.client.request;
 
 import com.insider.testcase.test_automation_api.pet.model.Category;
 import com.insider.testcase.test_automation_api.pet.model.Tag;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
-public class Pet {
-    private Long id;
+@AllArgsConstructor
+public class UpdateExistingPetInvalidIdRequest {
+    private String id;
     private Category category;
     private String name;
     private List<String> photoUrls;
