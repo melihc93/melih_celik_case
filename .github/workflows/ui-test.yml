@@ -21,10 +21,6 @@ jobs:
   ui-e2e:
     name: UI on ${{ matrix.browser }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        browser: [ chrome, firefox ]
 
     steps:
       - name: Checkout
@@ -38,13 +34,11 @@ jobs:
           cache: maven
 
       - name: Setup Chrome
-        if: matrix.browser == 'chrome'
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
 
       - name: Setup Firefox
-        if: matrix.browser == 'firefox'
         uses: browser-actions/setup-firefox@v1
         with:
           firefox-version: latest
