@@ -55,7 +55,7 @@ jobs:
           firefox --version || true
 
       - name: Run tests
-        run: mvn clean test
+        run: mvn clean verify -Dmaven.test.failure.ignore=true
 
       - name: Upload JUnit reports
         if: always()
@@ -74,3 +74,50 @@ jobs:
           path: test-automation/target/screenshots/**
           if-no-files-found: warn
           retention-days: 3
+
+      - name: Upload allure-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: test-automation/target/allure-results/**
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload allure-report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: test-automation/target/allure-report/**
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload surefire-reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: test-automation/target/surefire-reports/**
+          if-no-files-found: ignore
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: test-automation/target/allure-report
+
+  deploy-pages:
+    needs: ui-e2e
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add link to job summary
+        run: |
+          echo "### ✅ Allure report" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
