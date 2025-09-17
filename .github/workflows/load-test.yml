@@ -3,6 +3,8 @@ name: Load Test & Publish Reports
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'load-test/**'
   workflow_dispatch:
 
 permissions:
@@ -56,8 +58,8 @@ jobs:
 
           mkdir -p "${SITE_DIR}/smoke" "${SITE_DIR}/spike"
 
-          SMOKE_SRC=$(ls -td target/jmeter-report/smoke-load-test-* 2>/dev/null | head -1 || true)
-          SPIKE_SRC=$(ls -td target/jmeter-report/spike-load-test-* target/jmeter-report/spike-* 2>/dev/null | head -1 || true)
+          SMOKE_SRC=$(ls -td target/jmeter-report/smoke-load-test 2>/dev/null | head -1 || true)
+          SPIKE_SRC=$(ls -td target/jmeter-report/spike-load-test target/jmeter-report/spike-* 2>/dev/null | head -1 || true)
 
           HAS_SMOKE=0
           HAS_SPIKE=0
@@ -115,7 +117,7 @@ jobs:
       
           $( [ "$HAS_SMOKE" = "0" ] && [ "$HAS_SPIKE" = "0" ] && cat <<'HTML'
           <p class="empty">No reports were produced in this run. Check the CI logs and ensure tests created
-          <code>target/jmeter-report/smoke-load-test-*</code> and/or <code>spike-load-test-*</code>.</p>
+          <code>target/jmeter-report/smoke-load-test</code> and/or <code>spike-load-test</code>.</p>
           HTML
           )
           

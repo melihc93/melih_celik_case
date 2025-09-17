@@ -3,6 +3,8 @@ name: Api Tests
 on:
   push:
     branches: [ master ]
+    paths:
+      - 'test-automation-api/**'
   pull_request:
   workflow_dispatch:
 

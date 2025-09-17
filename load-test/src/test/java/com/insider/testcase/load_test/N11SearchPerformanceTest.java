@@ -1,6 +1,5 @@
 package com.insider.testcase.load_test;
 
-import static com.insider.testcase.load_test.util.DateUtil.getCurrentTime;
 import static us.abstracta.jmeter.javadsl.JmeterDsl.*;
 
 import org.junit.jupiter.api.Test;
@@ -53,7 +52,7 @@ public class N11SearchPerformanceTest extends LoadTestBase{
                                 .children(merchantAssertion)
                 ),
 
-                htmlReporter("target/jmeter-report/smoke-load-test-" + getCurrentTime())
+                htmlReporter("target/jmeter-report/smoke-load-test")
         ).run();
 
         assertNoErrorsIfNormal(stats);
@@ -78,7 +77,7 @@ public class N11SearchPerformanceTest extends LoadTestBase{
                                         .param("q", "iphone")
                                         .children(iphoneAssertion)
                         ),
-                htmlReporter("target/jmeter-report/spike-load-test-" + getCurrentTime())
+                htmlReporter("target/jmeter-report/spike-load-test")
         ).run();
 
         assertNoErrorsIfNormal(stats);
