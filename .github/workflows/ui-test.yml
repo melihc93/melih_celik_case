@@ -1,0 +1,72 @@
+name: UI Tests
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'test-automation/**'
+      - '.github/workflows/ui-test.yml'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ui-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui-e2e:
+    name: UI on ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [ chrome, firefox ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '24'
+          cache: maven
+
+      - name: Setup Chrome
+        if: matrix.browser == 'chrome'
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Setup Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@v1
+        with:
+          firefox-version: latest
+
+      - name: Show browser versions
+        run: |
+          google-chrome --version || true
+          firefox --version || true
+
+      - name: Run tests
+        run: mvn clean test
+
+      - name: Upload JUnit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.browser }}
+          path: test-automation/target/surefire-reports/**
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload failure screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.browser }}
+          path: test-automation/target/screenshots/**
+          if-no-files-found: warn
+          retention-days: 3

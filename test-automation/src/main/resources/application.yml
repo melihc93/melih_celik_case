@@ -1,0 +1,9 @@
+ui:
+  baseUrl: https://useinsider.com
+  browser: chrome
+  headless: true
+  timeoutSec: 30
+
+test:
+  screenshotsDir: target/screenshots
+
