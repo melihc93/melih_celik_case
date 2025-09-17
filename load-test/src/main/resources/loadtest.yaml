@@ -1,0 +1,20 @@
+base: "https://www.n11.com"
+mode: ${MODE:waf}          # waf | normal
+
+timeouts:
+  connection: ${CONNECTION_TIMEOUT:10s}   # 500ms, 10s, 2m, PT10S...
+  response:   ${RESPONSE_TIMEOUT:30s}
+
+smokeLoadTest:
+  iterations: ${SMOKE_LOAD_TEST_ITERATIONS:30}
+  threads: ${SMOKE_LOAD_TEST_THREADS:3}
+
+spikeLoadTest:
+  baseUsers: ${SPIKE_LOAD_TEST_BASE_USERS:1}
+  preRampTime: ${SPIKE_LOAD_TEST_RAMP_TIME:1s}
+  preHoldTime: ${SPIKE_LOAD_TEST_PRE_HOLD_TIME:5s}
+  spikeUsers: ${SPIKE_LOAD_TEST_SPIKE_USERS:5}
+  rampUpTime: ${SPIKE_LOAD_TEST_RAMP_UP_TIME:5s}
+  holdPeakTime: ${SPIKE_LOAD_TEST_HOLD_PEAK_TIME:20s}
+  finalUsers: ${SPIKE_LOAD_TEST_FINAL_USERS:0}
+  rampDownTime: ${SPIKE_LOAD_TEST_RAMP_DOWN_TIME:5s}

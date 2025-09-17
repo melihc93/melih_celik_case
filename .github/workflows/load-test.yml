@@ -1,0 +1,95 @@
+name: Load Test & Publish Reports
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: load-test
+
+jobs:
+  build:
+    name: Run Maven tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '24'
+          cache: 'maven'
+
+      - name: Run tests
+        env:
+          MAVEN_OPTS: -Xmx2g
+        run: |
+          mvn -B clean test
+
+      - name: Upload full HTML reports as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-report
+          path: load-test/target/jmeter-report/**
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Prepare GitHub Pages site
+        run: |
+          set -euo pipefail
+          SITE_DIR="${GITHUB_WORKSPACE}/site"
+          mkdir -p "${SITE_DIR}/smoke" "${SITE_DIR}/spike"
+
+          # Find latest smoke & spike report directories (newest by mtime)
+          SMOKE_DIR=$(ls -td target/jmeter-report/smoke-load-test-* 2>/dev/null | head -1 || true)
+          # Support both "spike-load-test-..." and earlier "spike-..." prefixes
+          SPIKE_DIR=$(ls -td target/jmeter-report/spike-load-test-* target/jmeter-report/spike-* 2>/dev/null | head -1 || true)
+
+          if [ -n "${SMOKE_DIR:-}" ] && [ -d "$SMOKE_DIR" ]; then
+            cp -R "$SMOKE_DIR"/* "${SITE_DIR}/smoke/"
+          fi
+          if [ -n "${SPIKE_DIR:-}" ] && [ -d "$SPIKE_DIR" ]; then
+            cp -R "$SPIKE_DIR"/* "${SITE_DIR}/spike/"
+          fi
+
+          # Minimal root index linking to sub-reports
+          cat > "${SITE_DIR}/index.html" <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8"/>
+          <title>Load Test Reports</title>
+          <style>body{font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px} a{display:block;margin:8px 0}</style>
+          <h1>Load Test Reports</h1>
+          <a href="smoke/">Smoke Load Test</a>
+          <a href="spike/">Spike Load Test</a>
+          <p style="color:#666">If a link 404s, that report wasn't generated in this run.</p>
+          HTML
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: deploy
+        name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
