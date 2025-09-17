@@ -5,6 +5,7 @@ on:
     branches: [ master ]
     paths:
       - 'load-test/**'
+      - '.github/workflows/load-test.yml'
   workflow_dispatch:
 
 permissions:
