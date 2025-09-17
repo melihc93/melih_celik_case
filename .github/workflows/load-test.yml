@@ -52,31 +52,78 @@ jobs:
         run: |
           set -euo pipefail
           SITE_DIR="${GITHUB_WORKSPACE}/site"
+          mkdir -p "${SITE_DIR}"
+
           mkdir -p "${SITE_DIR}/smoke" "${SITE_DIR}/spike"
 
-          # Find latest smoke & spike report directories (newest by mtime)
-          SMOKE_DIR=$(ls -td target/jmeter-report/smoke-load-test-* 2>/dev/null | head -1 || true)
-          # Support both "spike-load-test-..." and earlier "spike-..." prefixes
-          SPIKE_DIR=$(ls -td target/jmeter-report/spike-load-test-* target/jmeter-report/spike-* 2>/dev/null | head -1 || true)
+          SMOKE_SRC=$(ls -td target/jmeter-report/smoke-load-test-* 2>/dev/null | head -1 || true)
+          SPIKE_SRC=$(ls -td target/jmeter-report/spike-load-test-* target/jmeter-report/spike-* 2>/dev/null | head -1 || true)
 
-          if [ -n "${SMOKE_DIR:-}" ] && [ -d "$SMOKE_DIR" ]; then
-            cp -R "$SMOKE_DIR"/* "${SITE_DIR}/smoke/"
-          fi
-          if [ -n "${SPIKE_DIR:-}" ] && [ -d "$SPIKE_DIR" ]; then
-            cp -R "$SPIKE_DIR"/* "${SITE_DIR}/spike/"
+          HAS_SMOKE=0
+          HAS_SPIKE=0
+
+          if [ -n "${SMOKE_SRC}" ] && [ -d "${SMOKE_SRC}" ]; then
+            cp -R "${SMOKE_SRC}/"*.{html,css,js,png,svg,ico,woff,woff2,ttf,txt,json} 2>/dev/null || true
+            cp -R "${SMOKE_SRC}/" "${SITE_DIR}/smoke/" 2>/dev/null || true
+            HAS_SMOKE=1
           fi
 
-          # Minimal root index linking to sub-reports
-          cat > "${SITE_DIR}/index.html" <<'HTML'
+          if [ -n "${SPIKE_SRC}" ] && [ -d "${SPIKE_SRC}" ]; then
+            cp -R "${SPIKE_SRC}/"*.{html,css,js,png,svg,ico,woff,woff2,ttf,txt,json} 2>/dev/null || true
+            cp -R "${SPIKE_SRC}/" "${SITE_DIR}/spike/" 2>/dev/null || true
+            HAS_SPIKE=1
+          fi
+
+          BUILD_TIME="$(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+
+          cat > "${SITE_DIR}/index.html" <<EOF
           <!doctype html>
           <meta charset="utf-8"/>
           <title>Load Test Reports</title>
-          <style>body{font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px} a{display:block;margin:8px 0}</style>
+          <style>
+            body{font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:36px;max-width:920px;margin:auto}
+            h1{margin:0 0 6px 0}
+            .meta{color:#666;margin-bottom:20px}
+            .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px}
+            .card{border:1px solid #e3e3e3;border-radius:12px;padding:16px}
+            .card a{font-weight:600;text-decoration:none}
+            .card p{margin:8px 0 0 0;color:#444}
+            .empty{color:#a00;background:#fee;border:1px solid #fcc;padding:12px;border-radius:8px}
+            footer{margin-top:32px;color:#777}
+          </style>
           <h1>Load Test Reports</h1>
-          <a href="smoke/">Smoke Load Test</a>
-          <a href="spike/">Spike Load Test</a>
-          <p style="color:#666">If a link 404s, that report wasn't generated in this run.</p>
+          <div class="meta">
+            Branch: <strong>${{ github.ref_name }}</strong> · Commit: <code>${{ github.sha }}</code> · Built: ${BUILD_TIME}
+          </div>
+
+          <div class="cards">
+            $( [ "$HAS_SMOKE" = "1" ] && cat <<'HTML'
+            <div class="card">
+              <a href="smoke/">Smoke Load Test</a>
+              <p>Latest smoke dashboard.</p>
+            </div>
           HTML
+          )
+          $( [ "$HAS_SPIKE" = "1" ] && cat <<'HTML'
+          <div class="card">
+          <a href="spike/">Spike Load Test</a>
+          <p>Latest spike dashboard.</p>
+          </div>
+          HTML
+          )
+          </div>
+      
+          $( [ "$HAS_SMOKE" = "0" ] && [ "$HAS_SPIKE" = "0" ] && cat <<'HTML'
+          <p class="empty">No reports were produced in this run. Check the CI logs and ensure tests created
+          <code>target/jmeter-report/smoke-load-test-*</code> and/or <code>spike-load-test-*</code>.</p>
+          HTML
+          )
+          
+          <footer>
+          If a link 404s, that report wasn't generated in this run.
+          </footer>
+          EOF
+      
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
