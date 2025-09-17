@@ -14,10 +14,6 @@ permissions:
   pages: write
   id-token: write
 
-defaults:
-  run:
-    working-directory: test-automation
-
 concurrency:
   group: ui-tests-${{ github.ref }}
   cancel-in-progress: true
@@ -26,6 +22,9 @@ jobs:
   ui-e2e:
     name: UI Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: test-automation
 
     steps:
       - name: Checkout
