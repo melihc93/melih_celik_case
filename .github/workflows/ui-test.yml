@@ -9,6 +9,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: test-automation
+
 concurrency:
   group: ui-tests-${{ github.ref }}
   cancel-in-progress: true
