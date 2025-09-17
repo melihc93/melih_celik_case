@@ -23,7 +23,7 @@ public class TestResiliences {
         for (int i = 1; i <= attempts; i++) {
             try {
                 assertion.execute();
-                return; // success
+                return;
             } catch (Throwable t) {
                 last = t;
                 if (!isRetryable(t, retryOn) || i == attempts) throw t;

@@ -26,7 +26,6 @@ public final class ConfigManager {
         String name = System.getProperty("CONFIG", "loadtest.yaml");
         String expanded = null;
 
-        // 1) classpath
         try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(name)) {
             if (is != null) {
                 expanded = EnvironmentExpander.expand(new String(is.readAllBytes(), StandardCharsets.UTF_8));
@@ -35,7 +34,6 @@ public final class ConfigManager {
             throw new UncheckedIOException(e);
         }
 
-        // 2) filesystem fallback
         if (expanded == null) {
             Path p = Paths.get(name);
             if (Files.exists(p)) {
@@ -47,13 +45,6 @@ public final class ConfigManager {
             }
         }
 
-        if (expanded == null) {
-            // No file found: build a default config
-            LoadTestConfig def = new LoadTestConfig();
-            return def;
-        }
-
-        // Important: parse the EXPANDED text
         return new Yaml().loadAs(expanded, LoadTestConfig.class);
     }
 }

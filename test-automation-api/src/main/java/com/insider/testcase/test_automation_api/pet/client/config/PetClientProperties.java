@@ -1,4 +1,4 @@
-package com.insider.testcase.test_automation_api.pet.config;
+package com.insider.testcase.test_automation_api.pet.client.config;
 
 import lombok.Getter;
 import lombok.Setter;

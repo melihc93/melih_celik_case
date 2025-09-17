@@ -3,7 +3,6 @@ package com.insider.testcase.load_test;
 import com.insider.testcase.load_test.config.ConfigManager;
 import com.insider.testcase.load_test.config.model.LoadTestConfig;
 import com.insider.testcase.load_test.n11.DefaultHeader;
-import org.apache.jmeter.util.JMeterUtils;
 import us.abstracta.jmeter.javadsl.core.DslTestPlan;
 import us.abstracta.jmeter.javadsl.core.TestPlanStats;
 

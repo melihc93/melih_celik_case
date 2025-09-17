@@ -1,11 +1,10 @@
 package com.insider.testcase.test_automation_api.pet.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insider.testcase.test_automation_api.config.rest.RestClient;
 import com.insider.testcase.test_automation_api.pet.client.exception.EmptyResponseException;
 import com.insider.testcase.test_automation_api.pet.client.response.DeleteByIdResponse;
 import com.insider.testcase.test_automation_api.pet.client.response.UploadImageResponse;
-import com.insider.testcase.test_automation_api.pet.config.PetClientProperties;
+import com.insider.testcase.test_automation_api.pet.client.config.PetClientProperties;
 import com.insider.testcase.test_automation_api.pet.client.request.QueryParamNames;
 import com.insider.testcase.test_automation_api.pet.client.response.Pet;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ import java.util.Objects;
 public class PetClient {
     private final RestClient restClient;
     private final PetClientProperties petClientProperties;
-    private final ObjectMapper objectMapper;
     private final ParameterizedTypeReference<List<Pet>> PET_LIST_RESPONSE_TYPE =
             new ParameterizedTypeReference<>() {
             };

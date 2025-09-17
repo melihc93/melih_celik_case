@@ -41,12 +41,10 @@ public class PetClientLoggingAspect {
             Object out = pjp.proceed();
             long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0);
 
-            // If the method returns a ResponseEntity, log details about it
             if (out instanceof ResponseEntity<?> res) {
                 var status = res.getStatusCode();
                 boolean ok2xx = status.is2xxSuccessful();
 
-                // INFO summary (always)
                 logAt(ok2xx ? LogLevel.INFO : LogLevel.WARN,
                         "{} -> status={} time={}ms bodyType={} size={}",
                         method, status.value(), tookMs,
@@ -54,13 +52,11 @@ public class PetClientLoggingAspect {
                         bodySize(res.getBody())
                 );
 
-                // DEBUG details (only when DEBUG enabled)
                 if (log.isDebugEnabled()) {
                     log.debug("{} headers={}", method, redactHeaders(res.getHeaders()));
                     log.debug("{} body={}", method, truncate(toJson(res.getBody())));
                 }
             } else {
-                // Non-ResponseEntity return (rare, but safe)
                 log.info("{} -> returnType={} time={}ms",
                         method,
                         out == null ? "null" : out.getClass().getSimpleName(),
@@ -79,8 +75,6 @@ public class PetClientLoggingAspect {
         }
     }
 
-    // ---------- helpers ----------
-
     private enum LogLevel { INFO, WARN }
     private void logAt(LogLevel lvl, String msg, Object... args) {
         if (lvl == LogLevel.WARN) log.warn(msg, args);
@@ -97,7 +91,7 @@ public class PetClientLoggingAspect {
         if (body instanceof Map<?, ?> m) return m.size();
         if (body.getClass().isArray()) return java.lang.reflect.Array.getLength(body);
         if (body instanceof CharSequence cs) return cs.length();
-        return 1; // treat as single object
+        return 1;
     }
 
     private Object safeArgs(Object[] args) {
@@ -109,17 +103,14 @@ public class PetClientLoggingAspect {
 
     private Object argPreview(Object a) {
         if (a == null) return null;
-        // Avoid dumping file contents / binary data
         if (a instanceof Resource r) {
             return Map.of("Resource", Map.of("filename", r.getFilename(), "desc", r.getDescription()));
         }
         if (a instanceof MultiValueMap<?, ?> mv) {
-            // Show keys and toString of values (not bytes)
             Map<Object, Object> m = new LinkedHashMap<>();
             mv.forEach((k, v) -> m.put(k, String.valueOf(v)));
             return Map.of("MultiValueMap", m);
         }
-        // Default: JSON preview
         return truncate(toJson(a));
     }
 

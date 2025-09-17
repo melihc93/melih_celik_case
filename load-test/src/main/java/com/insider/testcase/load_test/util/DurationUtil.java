@@ -13,7 +13,6 @@ public final class DurationUtil {
             if (s.endsWith("s"))  return Duration.ofSeconds(Long.parseLong(s.substring(0, s.length()-1)));
             if (s.endsWith("m"))  return Duration.ofMinutes(Long.parseLong(s.substring(0, s.length()-1)));
             if (s.endsWith("h"))  return Duration.ofHours(Long.parseLong(s.substring(0, s.length()-1)));
-            // fallback: allow "10S" style
             return Duration.parse("PT" + s.toUpperCase());
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid duration: " + raw, e);
