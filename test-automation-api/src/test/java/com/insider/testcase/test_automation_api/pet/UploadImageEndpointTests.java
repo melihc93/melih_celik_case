@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insider.testcase.test_automation_api.TestAutomationApiCaseSolutionApplication;
 import com.insider.testcase.test_automation_api.pet.client.PetClient;
 import com.insider.testcase.test_automation_api.pet.client.request.AddNewPetRequest;
+import com.insider.testcase.test_automation_api.pet.client.response.ErrorResponse;
 import com.insider.testcase.test_automation_api.pet.client.response.Pet;
 import com.insider.testcase.test_automation_api.pet.client.response.UploadImageResponse;
 import com.insider.testcase.test_automation_api.pet.model.Category;
@@ -106,5 +107,68 @@ public class UploadImageEndpointTests {
         );
     }
 
-    // TODO negative case should be added here
+    @Test
+    public void notExistedPetId_imageNotUpdatedByItsEndpoint() throws Throwable {
+        Long generatedRandomPetId = petService.generateNotExistedPetId();
+        Long generatedRandomCategoryId = randomLong();
+        String generatedRandomCategoryName = randomString();
+        String generatedRandomPetName = randomString();
+        Long generatedRandomTagId = randomLong();
+        String generatedRandomTagName = randomString();
+        String status = "available";
+
+        ResponseEntity<?> addNewPetResponse = petClient.addNewPet(AddNewPetRequest.builder()
+                .id(generatedRandomPetId)
+                .category(Category.builder()
+                        .id(generatedRandomCategoryId)
+                        .name(generatedRandomCategoryName)
+                        .build())
+                .name(generatedRandomPetName)
+                .tags(List.of(Tag.builder()
+                        .id(generatedRandomTagId)
+                        .name(generatedRandomTagName)
+                        .build()))
+                .status(status)
+                .build());
+
+        assertThat(addNewPetResponse.getStatusCode().is2xxSuccessful()).isTrue();
+
+        assertWithRetry(
+                () -> assertThat(petClient.findPetById(String.valueOf(generatedRandomPetId)).getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(200))).isTrue(),
+                findByStatusEndpointDelay,
+                java.time.Duration.ofMillis(findByStatusEndpointDelay),
+                AssertionError.class
+        );
+
+        Pet foundPetById = objectMapper.convertValue(petClient.findPetById(String.valueOf(generatedRandomPetId)).getBody(), Pet.class);
+
+        assertAll(
+                () -> assertThat(foundPetById.getCategory().getId()).isEqualTo(generatedRandomCategoryId),
+                () -> assertThat(foundPetById.getCategory().getName()).isEqualTo(generatedRandomCategoryName),
+                () -> assertThat(foundPetById.getName()).isEqualTo(generatedRandomPetName),
+                () -> assertThat(foundPetById.getPhotoUrls()).isNull(),
+                () -> assertThat(foundPetById.getTags().getFirst().getId()).isEqualTo(generatedRandomTagId),
+                () -> assertThat(foundPetById.getTags().getFirst().getName()).isEqualTo(generatedRandomTagName)
+        );
+
+
+        ClassPathResource cpr = new ClassPathResource("cute-cat.png");
+        String additionalMetadata = "test123";
+
+        ResponseEntity<?> uploadRes = petClient.uploadImage(
+                null,
+                additionalMetadata,
+                cpr,
+                MediaType.IMAGE_PNG
+        );
+
+        assertThat(uploadRes.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(404))).isTrue();
+
+        ErrorResponse body = objectMapper.convertValue(uploadRes.getBody(), ErrorResponse.class);
+        assertAll(
+                () -> assertThat(body.getCode()).isEqualTo(404),
+                () -> assertThat(body.getMessage()).isEqualTo("java.lang.NumberFormatException: For input string: \"null\""),
+                () -> assertThat(body.getType()).isEqualTo("unknown")
+        );
+    }
 }

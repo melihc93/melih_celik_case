@@ -2,6 +2,7 @@ package com.insider.testcase.test_automation_api.pet.client;
 
 import com.insider.testcase.test_automation_api.config.rest.RestClient;
 import com.insider.testcase.test_automation_api.pet.client.exception.EmptyResponseException;
+import com.insider.testcase.test_automation_api.pet.client.exception.NotFoundResponseException;
 import com.insider.testcase.test_automation_api.pet.client.response.DeleteByIdResponse;
 import com.insider.testcase.test_automation_api.pet.client.response.UploadImageResponse;
 import com.insider.testcase.test_automation_api.pet.client.config.PetClientProperties;
@@ -23,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
@@ -163,6 +165,11 @@ public class PetClient {
         );
     }
 
+    @Retryable(
+            retryFor = NotFoundResponseException.class,
+            maxAttemptsExpression = "${test-resilience.rest.pet.update-with-form.attempt}",
+            backoff = @Backoff(delayExpression = "${test-resilience.rest.pet.update-with-form.delay}")
+    )
     public ResponseEntity<?> updatePetWithFormData(String petId, String name, String status) {
         URI uri = UriComponentsBuilder
                 .fromUriString(petClientProperties.getBaseUrl())
@@ -178,13 +185,14 @@ public class PetClient {
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        return restClient.exchange(
-                HttpMethod.POST,
-                uri,
-                form,
-                UPLOAD_IMAGE_RESPONSE_TYPE,
-                headers
+        ResponseEntity<?> res = restClient.exchange(
+                HttpMethod.POST, uri, form, UPLOAD_IMAGE_RESPONSE_TYPE, headers
         );
+
+        if (isNotFound(res)) {
+            throw new NotFoundResponseException("Update with form returned 404 for petId=" + petId, res);
+        }
+        return res;
     }
 
     public ResponseEntity<?> deletePetById(String petId) {
@@ -209,5 +217,23 @@ public class PetClient {
     @Recover
     private ResponseEntity<?> findPetById(EmptyResponseException ex, String petId) {
         return ex.getLastResponse();
+    }
+
+    @Recover
+    private ResponseEntity<?> updatePetWithFormData(NotFoundResponseException ex, String petId, String name, String status) {
+        return ex.getLastResponse();
+    }
+
+    private boolean isNotFound(ResponseEntity<?> res) {
+        if (res.getStatusCode() == HttpStatus.NOT_FOUND) return true;
+        Object body = res.getBody();
+        if (body instanceof Map<?,?> m) {
+            Object msg = m.get("message");
+            return msg != null && String.valueOf(msg).toLowerCase().contains("not found");
+        }
+        if (body instanceof CharSequence cs) {
+            return cs.toString().toLowerCase().contains("not found");
+        }
+        return false;
     }
 }

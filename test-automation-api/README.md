@@ -71,6 +71,7 @@ A GitHub Actions pipeline runs the suite and **publishes the Allure HTML report 
 |   |   |                   |   |   |       
 |   |   |                   |   |   +---exception
 |   |   |                   |   |   |       EmptyResponseException.java                     # Custom pet client exception
+|   |   |                   |   |   |       NotFoundResponseException.java.java             # Custom pet client exception
 |   |   |                   |   |   |       
 |   |   |                   |   |   +---logging
 |   |   |                   |   |   |       PetClientLoggingAspect.java                     # Aspect logger for pet client
@@ -86,6 +87,7 @@ A GitHub Actions pipeline runs the suite and **publishes the Allure HTML report 
 |   |   |                   |   |           DeleteByIdResponse.java
 |   |   |                   |   |           Pet.java
 |   |   |                   |   |           UploadImageResponse.java
+|   |   |                   |   |           ErrorResponse.java
 |   |   |                   |   |           
 |   |   |                   |   +---model
 |   |   |                   |   |       Category.java
@@ -193,6 +195,20 @@ Enable DEBUG for the aspect via `logging.level....PetClientLoggingAspect: DEBUG`
               delay: <>
       ```
     - `@Recover` returns the last response after retries.
+- `updatePetWithFormData`:
+
+    - Throws `NotFoundResponseException` if response is 404, even i created pet previously (rare, flaky scenario).
+    - `@Retryable` retries on that exception with attempt/delay configured under:
+      ```yaml
+      test-resilience:
+        rest:
+          pet:
+            update-with-form:
+              attempt: <>
+              delay: <>
+      ```
+    - `@Recover` returns the last response after retries.
+  
 - `TestResiliences.assertWithRetry(...)` allows re-running fragile assertions a few times with a delay (defaults via system props `test.retry.*`).
 
 ### Randomized data

@@ -23,6 +23,10 @@ test-resilience:
       find-by-status:
         delay: 500 # milliseconds
         attempt: 10
+      update-with-form:
+        delay: 500
+        attempt: 20
+
 
 logging:
   file:

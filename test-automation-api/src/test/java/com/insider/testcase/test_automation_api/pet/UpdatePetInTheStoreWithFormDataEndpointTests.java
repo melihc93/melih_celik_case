@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insider.testcase.test_automation_api.TestAutomationApiCaseSolutionApplication;
 import com.insider.testcase.test_automation_api.pet.client.PetClient;
 import com.insider.testcase.test_automation_api.pet.client.request.AddNewPetRequest;
+import com.insider.testcase.test_automation_api.pet.client.response.ErrorResponse;
 import com.insider.testcase.test_automation_api.pet.client.response.Pet;
 import com.insider.testcase.test_automation_api.pet.model.Category;
 import com.insider.testcase.test_automation_api.pet.model.Tag;
@@ -40,7 +41,7 @@ public class UpdatePetInTheStoreWithFormDataEndpointTests {
     private int findByStatusEndpointRetryAttempt;
 
     @Test
-    public void existingPetUpdatedSuccessfully() throws Throwable {
+    public void existingPetUpdatedSuccessfully_withFormDataEndpoint() throws Throwable {
         Long generatedRandomPetId = petService.generateNotExistedPetId();
         Long generatedRandomCategoryId = randomLong();
         String generatedRandomCategoryName = randomString();
@@ -100,9 +101,26 @@ public class UpdatePetInTheStoreWithFormDataEndpointTests {
                 () -> assertThat(updatedPet.getPhotoUrls()).isEqualTo(randomPhotoUrls),
                 () -> assertThat(updatedPet.getTags().getFirst().getId()).isEqualTo(generatedRandomTagId),
                 () -> assertThat(updatedPet.getTags().getFirst().getName()).isEqualTo(generatedRandomTagName),
-                () -> assertThat(updatedPet.getStatus()).isEqualTo("asdasd")
+                () -> assertThat(updatedPet.getStatus()).isEqualTo("sold")
         );
     }
 
-    // TODO negative case add, positive case fail fix
+    @Test
+    public void notExistingPetUpdateFails_withFormDataEndpoint() {
+        Long generatedRandomPetId = petService.generateNotExistedPetId();
+
+        String newlyGeneratedRandomPetName = randomString();
+
+        ResponseEntity<?> updateExistingPetResponse = petClient.updatePetWithFormData(String.valueOf(generatedRandomPetId), newlyGeneratedRandomPetName, "sold");
+
+        assertThat(updateExistingPetResponse.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(404))).isTrue();
+
+        ErrorResponse updatedPet = objectMapper.convertValue(updateExistingPetResponse.getBody(), ErrorResponse.class);
+
+        assertAll(
+                () -> assertThat(updatedPet.getCode()).isEqualTo(404),
+                () -> assertThat(updatedPet.getMessage()).isEqualTo("not found"),
+                () -> assertThat(updatedPet.getType()).isEqualTo("unknown")
+        );
+    }
 }
