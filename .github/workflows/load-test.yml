@@ -17,14 +17,13 @@ concurrency:
   group: 'pages'
   cancel-in-progress: true
 
-defaults:
-  run:
-    working-directory: load-test
-
 jobs:
   build:
     name: Run Performance Tests
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: load-test
 
     steps:
       - name: Checkout
